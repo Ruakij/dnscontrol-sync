@@ -141,7 +141,7 @@ def updateNsData(zone):
         
 def adaptZoneName(zone):
     if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
-        adaptedZone = zone[:len(config['zone']['public-suffix'])]
+        adaptedZone = zone[:-len(config['zone']['public-suffix'])]
         return adaptedZone
     return zone
 
