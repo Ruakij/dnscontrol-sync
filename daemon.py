@@ -23,7 +23,13 @@ def main(args):
     startListen(s)
 
 def setupSocket(address, port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # IPv4/IPv6-check
+    if address == "" or ":" in address: 
+        family = socket.AF_INET6
+    else:
+        family = socket.AF_INET
+    
+    s = socket.socket(family, socket.SOCK_DGRAM)
     s.bind((address, port))
     return s
 
