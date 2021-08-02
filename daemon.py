@@ -3,11 +3,7 @@
 import os, re, _thread, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
 from pathlib import Path
 
-import dns.flags
-import dns.message
-import dns.rdataclass
-import dns.rdatatype
-import dns.name
+import dnslib as dns
 
 from typing import cast
 
@@ -17,7 +13,7 @@ def main(args):
     log.debug("Logging started")
 
     global config
-    config = readConfig("/data/config.yml")
+    config = readConfig("data/config.yml")
 
     s = setupSocket(config['socket']['address'], config['socket']['port'])
     
@@ -42,22 +38,22 @@ def startListen(s):
 
 def receiveFromWire(s):
     (wire, address) = s.recvfrom(512)
-    dmsg = dns.message.from_wire(wire)
+    dmsg = dns.DNSRecord.parse(wire)
     return (address, dmsg)
 
 def handleQuery(s, address, dmsg):
-    log.info(f'{address[0]} |\tGot query')
+    log.info(f'{address[0]} |\tGot query {dmsg.header.id}')
 
-    opcode = dmsg.opcode()
-    if opcode != dns.opcode.NOTIFY:
-        log.error(f"{address[0]} |\tExpected opcode=NOTIFY, but was {dns.opcode.to_text(opcode)}")
-        makeResponseWithRCode(s, address, dmsg, dns.rcode.REFUSED)
+    opcode = dmsg.header.opcode
+    if opcode != dns.OPCODE.NOTIFY:
+        log.error(f"{address[0]} |\tExpected opcode=NOTIFY, but was {dns.OPCODE[opcode]}")
+        makeResponseWithRCode(s, address, dmsg, dns.RCODE.REFUSED)
         return False
     
-    rcode = dmsg.rcode()
-    if rcode != dns.rcode.NOERROR:
-        log.error(f"{address[0]} |\tExpected rcode=NOERROR, but was {dns.rcode.to_text(rcode)}")
-        makeResponseWithRCode(s, address, dmsg, dns.rcode.FORMERR)
+    rcode = dmsg.header.rcode
+    if rcode != dns.RCODE.NOERROR:
+        log.error(f"{address[0]} |\tExpected rcode=NOERROR, but was {dns.RCODE[rcode]}")
+        makeResponseWithRCode(s, address, dmsg, dns.RCODE.REFUSED)
         return False
     
     #flags = dmsg.flags
@@ -65,39 +61,40 @@ def handleQuery(s, address, dmsg):
     #    print('Expected flags=AA, but was', dns.flags.to_text(flags))
     #    continue
 
-    if len(dmsg.question) != 1:
+    if len(dmsg.questions) != 1:
         log.error(f'{address[0]} |\tExpected question-len=1, but was {len(dmsg.question)}')
-        makeResponseWithRCode(s, address, dmsg, dns.rcode.FORMERR)
+        makeResponseWithRCode(s, address, dmsg, dns.RCODE.FORMERR)
         return False
     
     # Check record in question
-    record = dmsg.question[0]
+    record = dmsg.questions[0]
     
-    r_datatype = record.rdtype
-    if r_datatype != dns.rdatatype.SOA:
-        log.error(f'{address[0]} |\tExpected record to be SOA, but was {r_datatype}')
-        makeResponseWithRCode(s, address, dmsg, dns.rcode.FORMERR)
+    r_qtype = record.qtype
+    if r_qtype != dns.QTYPE.SOA:
+        log.error(f'{address[0]} |\tExpected record to be SOA, but was {dns.QTYPE[r_qtype]}')
+        makeResponseWithRCode(s, address, dmsg, dns.RCODE.FORMERR)
         return False
     
-    log.info(f'{address[0]} |\tNOTIFY for {record.name}')
-    
-    _thread.start_new_thread(updateNsData, (record.name,))
+    name = str(record.qname)
 
-    response = dns.message.make_response(dmsg) # type: dns.message.Message
-    response.flags |= dns.flags.AA
+    log.info(f'{address[0]} |\tNOTIFY for {name}')
+    
+    _thread.start_new_thread(updateNsData, (name,))
+
+    response = dmsg.reply() # type: dns.message.Message
+    response.header.aa = 1
     sendResponse(s, address, response)
     log.debug(f'{address[0]} |\tSent response')
     
     return True
 
 def makeResponseWithRCode(socket, address, dmsg, rcode):
-    response = dns.message.make_response(dmsg) # type: dns.message.Message
-    response.set_rcode(rcode)
+    response = dmsg.reply() # type: dns.message.Message
+    response.header.rcode = rcode
     sendResponse(socket, address, response)
 
 def sendResponse(socket, address, response):
-    wire = response.to_wire(cast(dns.name.Name, response))
-    socket.sendto(wire, address)
+    socket.sendto(response.pack(), address)
 
 def setupLogging(verbose: bool):
     level = log.INFO
@@ -123,7 +120,7 @@ def readYamlFile(file: str):
 def updateNsData(zone):
     hasToDelete = False
     try:
-        zone = str(zone)[:-1]
+        zone = zone[:-1]
         adaptedZone = adaptZoneName(zone)
 
         log.info(f'{adaptedZone} |\tUpdating NS-Data')
