@@ -16,6 +16,7 @@ def main(args):
     setupLogging(True)
     log.debug("Logging started")
 
+    global config
     config = readConfig("config.yml")
 
     s = setupSocket(config['socket']['address'], config['socket']['port'])
