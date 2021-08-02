@@ -20,4 +20,4 @@ D('example.com', REG_NONE, DnsProvider(cloudflare));
 
 // Include
 //  (Do not touch unless you know what you are doing!)
-require_glob("");   // TODO: determine correct location to include
+require_glob("/app/hosts/");
