@@ -20,4 +20,8 @@ D('example.com', REG_NONE, DnsProvider(cloudflare));
 
 // Include
 //  (Do not touch unless you know what you are doing!)
-require_glob("/app/hosts/");
+
+// FIXME: As require_glob does not work, we have to find another way to allow multiple files being loaded into dnscontrol
+//         Maybe load 1 seperate file which can be expanded (being careful about thread-safety)
+//require_glob("/app/hosts/");
+require("/app/hosts/dump.js");

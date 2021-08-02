@@ -109,13 +109,15 @@ def handleQuery(s, address, dmsg):
 
     log.info(f'{address[0]} |\tNOTIFY for {name}')
     
-    _thread.start_new_thread(updateNsData, (name,))
-
     response = dmsg.reply() # type: dns.message.Message
     response.header.aa = 1
     sendResponse(s, address, response)
     log.debug(f'{address[0]} |\tSent response')
-    
+
+    # FIXME: see: data/dnsconfig.js require_glob
+    #_thread.start_new_thread(updateNsData, (name,))
+    updateNsData(name)
+
     return True
 
 def makeResponseWithRCode(socket, address, dmsg, rcode):
@@ -156,7 +158,10 @@ def updateNsData(zone):
 
         log.info(f'{adaptedZone} |\tUpdating NS-Data')
 
-        dumpFile = f"{adaptedZone}.dump.js"
+        # FIXME: see: data/dnsconfig.js require_glob
+        #dumpFile = f"{adaptedZone}.dump.js"
+        dumpFile = "dump.js"
+
         if dumpZoneData(zone, dumpFile) != 0:
             raise Exception("Dumping data failed!")
         zone = adaptedZone
