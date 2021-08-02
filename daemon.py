@@ -150,7 +150,7 @@ def dumpZoneData(zone, dumpFile):
 
 ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
 def adaptFileForRequire(zone, dumpFile):
-    log.debug(f'{zone} |\Rewriting file..')
+    log.debug(f'{zone} |\tRewriting file..')
 
     with open(dumpFile, 'r') as fin:
         with open(f"{dumpFile}.tmp", 'r') as fout:
