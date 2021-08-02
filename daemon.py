@@ -23,10 +23,10 @@ def setupEnvironment():
 
     (all, some) = copyAllFiles("data/", "/data")
     if all:
-        log.warn("Configuration-files were created!")
-        log.warn(" Make sure to change them according to your setup")
+        log.warning("Configuration-files were created!")
+        log.warning(" Make sure to change them according to your setup")
     elif some:
-        log.warn("Some configuration-files were recreated, because they were missing")
+        log.warning("Some configuration-files were recreated, because they were missing")
 
 def copyAllFiles(src, dst, overwrite=False):
     all=True
@@ -162,8 +162,8 @@ def updateNsData(zone):
 
         log.info(f'{adaptedZone} |\tFinished')
     except:
-        log.warn(f'{adaptedZone} |\t{sys.exc_info()}')
-        log.warn(f'{adaptedZone} |\tUpdating NS-Data failed!')
+        log.warning(f'{adaptedZone} |\t{sys.exc_info()}')
+        log.warning(f'{adaptedZone} |\tUpdating NS-Data failed!')
 
     if(hasToDelete):
         deleteFile(dumpFile)
