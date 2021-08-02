@@ -1,11 +1,8 @@
 #!/usr/bin/python3 
 
-import os, re, _thread, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
-from pathlib import Path
+import os, re, _thread, socket, sys, re, yaml, logging as log
 
 import dnslib as dns
-
-from typing import cast
 
 config = None
 def main(args):
