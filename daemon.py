@@ -81,7 +81,7 @@ def handleQuery(s, address, dmsg):
     
     log.info(f'{address[0]} |\tNOTIFY for {record.name}')
     
-    _thread.start_new_thread(updateNsData, (record.name))
+    _thread.start_new_thread(updateNsData, (record.name,))
 
     response = dns.message.make_response(dmsg) # type: dns.message.Message
     response.flags |= dns.flags.AA
