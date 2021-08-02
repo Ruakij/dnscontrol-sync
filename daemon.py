@@ -146,12 +146,12 @@ def adaptZoneName(zone):
     return zone
 
 def dumpZoneData(zone, dumpFile):
-    log.debug(f'{zone} |\tDumping..')
+    log.debug(f"{zone} |\tDumping to '{dumpFile}'..")
     return os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
 
 ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
 def adaptFileForRequire(zone, dumpFile):
-    log.debug(f'{zone} |\tRewriting file..')
+    log.debug(f"{zone} |\tRewriting file '{dumpFile}'..")
 
     with open(dumpFile, 'r') as fin:
         with open(f"{dumpFile}.tmp", 'r') as fout:
