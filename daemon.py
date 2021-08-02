@@ -155,7 +155,7 @@ def adaptZoneName(zone):
 
 def dumpZoneData(zone, dumpFile):
     log.debug(f"{zone} |\tDumping to '{dumpFile}'..")
-    return os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
+    return os.system(f"dnscontrol get-zones --creds /data/creds.json --format=js --out={dumpFile} powerdns POWERDNS {zone}")
 
 def deleteFile(file):
     log.debug(f"Deleting file '{file}'")
@@ -176,7 +176,7 @@ def adaptFileForRequire(zone, dumpFile):
 
 def dnscontrolPush(zone):
     log.debug(f'{zone} |\tPushing..')
-    return os.system(f"dnscontrol push --domains {zone}")
+    return os.system(f"dnscontrol push --config /data/dnsconfig.js --creds /data/creds.json --domains {zone}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
