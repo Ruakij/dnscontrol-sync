@@ -101,7 +101,7 @@ def sendResponse(socket, address, response):
 
 def setupLogging(verbose: bool):
     level = log.INFO
-    format = '%(asctime)s %(levelname)s:\t%(message)s'
+    format = '%(levelname)s:\t%(message)s'
     
     if verbose:
         level = log.DEBUG
