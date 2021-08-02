@@ -136,6 +136,7 @@ def updateNsData(zone):
         if dnscontrolPush(zone) != 0:
             raise "Pushing data failed!"
     except:
+        log.error(f'{adaptedZone} |\t{sys.exc_info()}')
         log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
         
 def adaptZoneName(zone):
