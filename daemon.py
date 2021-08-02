@@ -1,6 +1,7 @@
 #!/usr/bin/python3 
 
-import os, subprocess, socket, datetime, getopt, sys, re, atexit, logging as log
+import os, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
+from pathlib import Path
 
 import dns.flags
 import dns.message
@@ -15,7 +16,9 @@ def main(args):
     setupLogging(True)
     log.debug("Logging started")
 
-    s = setupSocket('172.17.0.1', 53)
+    config = readConfig("config.yml")
+
+    s = setupSocket(config['socket']['address'], config['socket']['port'])
     
     startListen(s)
 
@@ -25,7 +28,7 @@ def setupSocket(address, port):
     return s
 
 def startListen(s):
-    log.debug('Now listening')
+    log.debug(f'Now listening')
     while True:
         (address, dmsg) = receiveFromWire(s)
 
@@ -97,6 +100,18 @@ def setupLogging(verbose: bool):
         level = log.DEBUG
 
     log.basicConfig(stream=sys.stdout, format=format, level=level)
+
+def readConfig(file: str):
+    log.debug(f"Reading config '{file}'..")
+
+    if not os.path.isfile(file):
+        raise OSError(2, file)
+    
+    return readYamlFile(file)
+
+def readYamlFile(file: str):
+    with open(file, "r") as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
