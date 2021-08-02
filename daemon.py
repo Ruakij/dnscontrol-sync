@@ -154,7 +154,7 @@ def adaptFileForRequire(zone, dumpFile):
     log.debug(f"{zone} |\tRewriting file '{dumpFile}'..")
 
     with open(dumpFile, 'r') as fin:
-        with open(f"{dumpFile}.tmp", 'r') as fout:
+        with open(f"{dumpFile}.tmp", 'w+') as fout:
             fout.write(f"D_EXTEND({zone},")
 
             for line in fin:
