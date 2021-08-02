@@ -1,4 +1,4 @@
 
 socket:
-  address: 0.0.0.0
+  address: ""
   port:   53
