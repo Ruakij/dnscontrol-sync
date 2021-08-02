@@ -163,7 +163,7 @@ def updateNsData(zone):
         
         hasToDelete = True
 
-        adaptFileForRequire(zone, dumpFile)
+        adaptFileForRequire(zone, HOSTS_PATH, dumpFile)
         if dnscontrolPush(zone) != 0:
             raise Exception("Pushing data failed!")
 
@@ -173,7 +173,7 @@ def updateNsData(zone):
         log.warning(f'{adaptedZone} |\tUpdating NS-Data failed!')
 
     if(hasToDelete):
-        deleteFile(dumpFile)
+        deleteFile(os.path.join(HOSTS_PATH, dumpFile))
     
 def adaptZoneName(zone):
     if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
@@ -190,17 +190,19 @@ def deleteFile(file):
     os.remove(file)
 
 ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
-def adaptFileForRequire(zone, dumpFile):
+def adaptFileForRequire(zone, path, dumpFile):
     log.debug(f"{zone} |\tRewriting file '{dumpFile}'..")
 
-    with open(f"{HOSTS_PATH}/{dumpFile}", 'r') as fin:
-        with open(f"{HOSTS_PATH}/{dumpFile}.tmp", 'w+') as fout:
+    dumpFilePath = os.path.join(path, dumpFile)
+
+    with open(dumpFilePath, 'r') as fin:
+        with open(f"{dumpFilePath}.tmp", 'w+') as fout:
             fout.write(f'D_EXTEND("{zone}",\n')
 
             for line in fin:
                 if not re.match(ignoreLinesRexp, line):
                     fout.write(line)
-    os.replace(f"{HOSTS_PATH}/{dumpFile}.tmp", dumpFile)
+    os.replace(f"{dumpFilePath}.tmp", dumpFilePath)
 
 def dnscontrolPush(zone):
     log.debug(f'{zone} |\tPushing..')
