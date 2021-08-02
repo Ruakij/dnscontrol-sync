@@ -74,7 +74,7 @@ def handleQuery(s, address, dmsg):
     # Check record in question
     record = dmsg.question[0]
     
-    r_datatype = record.rdtype;
+    r_datatype = record.rdtype
     if r_datatype != dns.rdatatype.SOA:
         log.error(f'{address[0]} |\tExpected record to be SOA, but was {r_datatype}')
         makeResponseWithRCode(s, address, dmsg, dns.rcode.FORMERR)
