@@ -1,2 +1,2 @@
 pyyaml
-py3dns
+dnslib
