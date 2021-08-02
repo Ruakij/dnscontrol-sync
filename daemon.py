@@ -1,6 +1,6 @@
 #!/usr/bin/python3 
 
-import os, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
+import os, _thread, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
 from pathlib import Path
 
 import dns.flags
@@ -37,9 +37,7 @@ def startListen(s):
     log.debug(f'Now listening')
     while True:
         (address, dmsg) = receiveFromWire(s)
-
-        if handleQuery(s, address, dmsg) != True:
-            continue
+        _thread.start_new_thread(handleQuery, (s, address, dmsg))
 
 def receiveFromWire(s):
     (wire, address) = s.recvfrom(512)
