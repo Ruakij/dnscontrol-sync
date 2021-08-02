@@ -155,7 +155,7 @@ def adaptFileForRequire(zone, dumpFile):
 
     with open(dumpFile, 'r') as fin:
         with open(f"{dumpFile}.tmp", 'w+') as fout:
-            fout.write(f"D_EXTEND({zone},")
+            fout.write(f'D_EXTEND("{zone}",\n')
 
             for line in fin:
                 if not re.match(ignoreLinesRexp, line):
