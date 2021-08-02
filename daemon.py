@@ -122,6 +122,7 @@ def readYamlFile(file: str):
 
 def updateNsData(zone):
     try:
+        zone = str(zone)[:-1]
         adaptedZone = adaptZoneName(zone)
 
         log.info(f'{adaptedZone} |\tUpdating NS-Data')
