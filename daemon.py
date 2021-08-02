@@ -7,7 +7,7 @@ import dnslib as dns
 config = None
 def main(args):
     setupLogging(True)
-    log.debug("Logging started")
+
 
     global config
     config = readConfig("/data/config.yml")
@@ -101,6 +101,7 @@ def setupLogging(verbose: bool):
         level = log.DEBUG
 
     log.basicConfig(stream=sys.stdout, format=format, level=level)
+    log.debug("Logging started")
 
 def readConfig(file: str):
     log.debug(f"Reading config '{file}'..")
