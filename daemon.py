@@ -1,6 +1,6 @@
 #!/usr/bin/python3 
 
-import os, _thread, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
+import os, re, _thread, subprocess, socket, datetime, getopt, sys, re, atexit, yaml, logging as log
 from pathlib import Path
 
 import dns.flags
@@ -11,7 +11,7 @@ import dns.name
 
 from typing import cast
 
-
+config = None
 def main(args):
     setupLogging(True)
     log.debug("Logging started")
@@ -79,6 +79,8 @@ def handleQuery(s, address, dmsg):
         return False
     
     log.info(f'{address[0]} |\tNOTIFY for {record.name}')
+    
+    _thread.start_new_thread(updateNsData, (record.name))
 
     response = dns.message.make_response(dmsg) # type: dns.message.Message
     response.flags |= dns.flags.AA
@@ -116,6 +118,45 @@ def readConfig(file: str):
 def readYamlFile(file: str):
     with open(file, "r") as f:
         return yaml.load(f, Loader=yaml.FullLoader)
+
+def updateNsData(zone):
+    adaptedZone = adaptZoneName(zone)
+
+    log.info(f'{adaptedZone} |\tUpdating NS-Data')
+
+    dumpFile = f"{adaptedZone}.dump.js"
+    dumpZoneData(zone, dumpFile)
+    zone = adaptedZone
+    
+    adaptFileForRequire(zone, dumpFile)
+    dnscontrolPush(zone)
+
+def adaptZoneName(zone):
+    if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
+        adaptedZone = zone[:len(config['zone']['public-suffix'])]
+        return adaptedZone
+    return zone
+
+def dumpZoneData(zone, dumpFile):
+    log.debug(f'{zone} |\tDumping..')
+    os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
+
+ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
+def adaptFileForRequire(zone, dumpFile):
+    log.debug(f'{zone} |\Rewriting file..')
+
+    with open(dumpFile, 'r') as fin:
+        with open(f"{dumpFile}.tmp", 'r') as fout:
+            fout.write(f"D_EXTEND({zone},")
+
+            for line in fin:
+                if not re.match(ignoreLinesRexp, line):
+                    fout.write(line)
+    os.replace(f"{dumpFile}.tmp", dumpFile)
+
+def dnscontrolPush(zone):
+    log.debug(f'{zone} |\tPushing..')
+    os.system(f"dnscontrol push --domains {zone}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
