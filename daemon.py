@@ -13,7 +13,7 @@ def main(args):
     log.debug("Logging started")
 
     global config
-    config = readConfig("data/config.yml")
+    config = readConfig("/data/config.yml")
 
     s = setupSocket(config['socket']['address'], config['socket']['port'])
     
