@@ -121,6 +121,7 @@ def readYamlFile(file: str):
         return yaml.load(f, Loader=yaml.FullLoader)
 
 def updateNsData(zone):
+    hasToDelete = False
     try:
         zone = str(zone)[:-1]
         adaptedZone = adaptZoneName(zone)
@@ -132,6 +133,8 @@ def updateNsData(zone):
             raise Exception("Dumping data failed!")
         zone = adaptedZone
         
+        hasToDelete = True
+
         adaptFileForRequire(zone, dumpFile)
         if dnscontrolPush(zone) != 0:
             raise Exception("Pushing data failed!")
@@ -141,8 +144,9 @@ def updateNsData(zone):
         log.error(f'{adaptedZone} |\t{sys.exc_info()}')
         log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
 
+    if(hasToDelete):
+        deleteFile(dumpFile)
     
-        
 def adaptZoneName(zone):
     if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
         adaptedZone = zone[:-len(config['zone']['public-suffix'])]
@@ -152,6 +156,10 @@ def adaptZoneName(zone):
 def dumpZoneData(zone, dumpFile):
     log.debug(f"{zone} |\tDumping to '{dumpFile}'..")
     return os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
+
+def deleteFile(file):
+    log.debug(f"Deleting file '{file}'")
+    os.remove(file)
 
 ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
 def adaptFileForRequire(zone, dumpFile):
