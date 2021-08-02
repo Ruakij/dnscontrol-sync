@@ -4,6 +4,10 @@ import shutil, os, re, _thread, socket, sys, re, yaml, logging as log
 
 import dnslib as dns
 
+DATA_PATH="/data"
+APP_PATH="/app"
+HOSTS_PATH="/app/hosts"
+
 config = None
 def main(args):
     setupLogging(True)
@@ -11,22 +15,25 @@ def main(args):
     setupEnvironment()
 
     global config
-    config = readConfig("/data/config.yml")
+    config = readConfig(os.path.join(DATA_PATH, "config.yml"))
 
     s = setupSocket(config['socket']['address'], config['socket']['port'])
     
     startListen(s)
 
 def setupEnvironment():
-    if not os.path.exists('/data'):
-        os.mkdir("/data")
+    if not os.path.exists(DATA_PATH):
+        os.mkdir(DATA_PATH)
 
-    (all, some) = copyAllFiles("data/", "/data")
+    (all, some) = copyAllFiles(f"{APP_PATH}/data/", DATA_PATH)
     if all:
         log.warning("Configuration-files were created!")
         log.warning(" Make sure to change them according to your setup")
     elif some:
         log.warning("Some configuration-files were recreated, because they were missing")
+
+    if not os.path.exists(HOSTS_PATH):
+        os.mkdir(HOSTS_PATH)
 
 def copyAllFiles(src, dst, overwrite=False):
     all=True
@@ -176,7 +183,7 @@ def adaptZoneName(zone):
 
 def dumpZoneData(zone, dumpFile):
     log.debug(f"{zone} |\tDumping to '{dumpFile}'..")
-    return os.system(f"dnscontrol get-zones --creds /data/creds.json --format=js --out={dumpFile} powerdns POWERDNS {zone}")
+    return os.system(f"dnscontrol get-zones --creds {DATA_PATH}/creds.json --format=js --out={HOSTS_PATH}/{dumpFile} powerdns POWERDNS {zone}")
 
 def deleteFile(file):
     log.debug(f"Deleting file '{file}'")
@@ -197,7 +204,7 @@ def adaptFileForRequire(zone, dumpFile):
 
 def dnscontrolPush(zone):
     log.debug(f'{zone} |\tPushing..')
-    return os.system(f"dnscontrol push --config /data/dnsconfig.js --creds /data/creds.json --domains {zone}")
+    return os.system(f"dnscontrol push --config {DATA_PATH}/dnsconfig.js --creds {DATA_PATH}/creds.json --domains {zone}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
