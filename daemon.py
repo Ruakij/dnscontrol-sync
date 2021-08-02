@@ -138,6 +138,8 @@ def updateNsData(zone):
     except:
         log.error(f'{adaptedZone} |\t{sys.exc_info()}')
         log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
+
+    log.info(f'{adaptedZone} |\tFinished')
         
 def adaptZoneName(zone):
     if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
