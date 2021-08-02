@@ -162,8 +162,8 @@ def updateNsData(zone):
 
         log.info(f'{adaptedZone} |\tFinished')
     except:
-        log.error(f'{adaptedZone} |\t{sys.exc_info()}')
-        log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
+        log.warn(f'{adaptedZone} |\t{sys.exc_info()}')
+        log.warn(f'{adaptedZone} |\tUpdating NS-Data failed!')
 
     if(hasToDelete):
         deleteFile(dumpFile)
