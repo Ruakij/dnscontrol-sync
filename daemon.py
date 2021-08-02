@@ -193,14 +193,14 @@ ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
 def adaptFileForRequire(zone, dumpFile):
     log.debug(f"{zone} |\tRewriting file '{dumpFile}'..")
 
-    with open(dumpFile, 'r') as fin:
-        with open(f"{dumpFile}.tmp", 'w+') as fout:
+    with open(f"{HOSTS_PATH}/{dumpFile}", 'r') as fin:
+        with open(f"{HOSTS_PATH}/{dumpFile}.tmp", 'w+') as fout:
             fout.write(f'D_EXTEND("{zone}",\n')
 
             for line in fin:
                 if not re.match(ignoreLinesRexp, line):
                     fout.write(line)
-    os.replace(f"{dumpFile}.tmp", dumpFile)
+    os.replace(f"{HOSTS_PATH}/{dumpFile}.tmp", dumpFile)
 
 def dnscontrolPush(zone):
     log.debug(f'{zone} |\tPushing..')
