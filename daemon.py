@@ -1,6 +1,6 @@
 #!/usr/bin/python3 
 
-import os, re, _thread, socket, sys, re, yaml, logging as log
+import shutil, os, re, _thread, socket, sys, re, yaml, logging as log
 
 import dnslib as dns
 
@@ -8,6 +8,7 @@ config = None
 def main(args):
     setupLogging(True)
 
+    setupEnvironment()
 
     global config
     config = readConfig("/data/config.yml")
@@ -15,6 +16,31 @@ def main(args):
     s = setupSocket(config['socket']['address'], config['socket']['port'])
     
     startListen(s)
+
+def setupEnvironment():
+    if not os.path.exists('/data'):
+        os.mkdir("/data")
+
+    (all, some) = copyAllFiles("data/", "/data")
+    if all:
+        log.warn("Configuration-files were created!")
+        log.warn(" Make sure to change them according to your setup")
+    elif some:
+        log.warn("Some configuration-files were recreated, because they were missing")
+
+def copyAllFiles(src, dst, overwrite=False):
+    all=True
+    some=False
+    for file in os.listdir(src):
+        src_file = os.path.join(src, file)
+        dst_file = os.path.join(dst, file)
+        if os.path.isfile(src_file):
+            if overwrite or not os.path.exists(dst_file):
+                shutil.copyfile(src_file, dst_file)
+                some=True
+            else:
+                all=False
+    return (all, some)
 
 def setupSocket(address, port):
     # IPv4/IPv6-check
