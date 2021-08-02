@@ -2,3 +2,6 @@
 socket:
   address: ""
   port:   53
+
+zone:
+  public-suffix: '.public'
