@@ -1,6 +1,6 @@
 # Dnscontrol-Sync
 
-This images is designed to synchronise changes between Nameserver-Providers (like PowerDNS or Cloudflare-DNS).
+This image is designed to synchronise changes between Nameserver-Providers (like PowerDNS or Cloudflare-DNS).
 
 It uses [dnscontrol](https://github.com/StackExchange/dnscontrol) to pull & push these changes
 and DNS-NOTIFY for event-driven updates.
