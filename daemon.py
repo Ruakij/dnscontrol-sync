@@ -121,17 +121,22 @@ def readYamlFile(file: str):
         return yaml.load(f, Loader=yaml.FullLoader)
 
 def updateNsData(zone):
-    adaptedZone = adaptZoneName(zone)
+    try:
+        adaptedZone = adaptZoneName(zone)
 
-    log.info(f'{adaptedZone} |\tUpdating NS-Data')
+        log.info(f'{adaptedZone} |\tUpdating NS-Data')
 
-    dumpFile = f"{adaptedZone}.dump.js"
-    dumpZoneData(zone, dumpFile)
-    zone = adaptedZone
-    
-    adaptFileForRequire(zone, dumpFile)
-    dnscontrolPush(zone)
-
+        dumpFile = f"{adaptedZone}.dump.js"
+        if dumpZoneData(zone, dumpFile) != 0:
+            raise "Dumping data failed!"
+        zone = adaptedZone
+        
+        adaptFileForRequire(zone, dumpFile)
+        if dnscontrolPush(zone) != 0:
+            raise "Pushing data failed!"
+    except:
+        log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
+        
 def adaptZoneName(zone):
     if config['zone']['public-suffix'] != "" and zone.endswith(config['zone']['public-suffix']):
         adaptedZone = zone[:len(config['zone']['public-suffix'])]
@@ -140,7 +145,7 @@ def adaptZoneName(zone):
 
 def dumpZoneData(zone, dumpFile):
     log.debug(f'{zone} |\tDumping..')
-    os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
+    return os.system(f"dnscontrol get-zones --format=js --out={dumpFile} powerdns POWERDNS {zone}")
 
 ignoreLinesRexp = r"^\s*(var|D\(|DnsProvider\(|DefaultTTL\()"
 def adaptFileForRequire(zone, dumpFile):
@@ -157,7 +162,7 @@ def adaptFileForRequire(zone, dumpFile):
 
 def dnscontrolPush(zone):
     log.debug(f'{zone} |\tPushing..')
-    os.system(f"dnscontrol push --domains {zone}")
+    return os.system(f"dnscontrol push --domains {zone}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
