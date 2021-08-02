@@ -129,12 +129,12 @@ def updateNsData(zone):
 
         dumpFile = f"{adaptedZone}.dump.js"
         if dumpZoneData(zone, dumpFile) != 0:
-            raise "Dumping data failed!"
+            raise Exception("Dumping data failed!")
         zone = adaptedZone
         
         adaptFileForRequire(zone, dumpFile)
         if dnscontrolPush(zone) != 0:
-            raise "Pushing data failed!"
+            raise Exception("Pushing data failed!")
     except:
         log.error(f'{adaptedZone} |\t{sys.exc_info()}')
         log.error(f'{adaptedZone} |\tUpdating NS-Data failed!')
